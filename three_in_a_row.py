@@ -2,6 +2,36 @@
 # -*- coding: utf-8 -*-
 
 
+class Player():
+    number_in_a_row = 4
+
+    def __init__(self, symbol):
+        self.list_token = []
+        self.symbol = symbol
+
+    def check_condition(self, primary_token, other_token, win_direction):
+        win_pack = ((1, 0), (0, 1), (1, 1), (-1, 1))
+        '''Win direction corresponds to the way of winning the game by connecting
+         n token horizontally (win direction =0), vertically (win direction =1),
+          and as per the left (win direction =2) and right (win direction =3) diagonals. '''
+        for item in range(- Player.number_in_a_row, Player.number_in_a_row):
+            if primary_token.pos_x == other_token.pos_x + item * (win_pack[win_direction][0]) \
+                    and primary_token.pos_y == other_token.pos_y + item * (win_pack[win_direction][1]):
+                return True
+
+    def check_connect(self):
+        for x in self.list_token:
+            out = [x.return_position()]
+            other_token = self.list_token[:]
+            other_token.remove(x)
+            for item in range(4):
+                corresponding_token = [y for y in other_token if self.check_condition(x, y, item)]
+                if len(corresponding_token) == Player.number_in_a_row - 1:
+                    for x in corresponding_token: out.append(x.return_position())
+                    return out
+        return None
+
+
 class Token():
     def __init__(self, pos_x, pos_y):
         self.pos_x = pos_x
@@ -20,26 +50,6 @@ def quadrillage(list_token,lenght=8):
                 print('| ', end="")
             if index_x == lenght + 1:
                 print('')
-
-
-def check_condition(primary_token, other_token, number_in_a_row=4):
-    # if primary_token.pos_x == other_token.pos_x - 1: return True
-    for x in range(-number_in_a_row, number_in_a_row):
-        if primary_token.pos_x == other_token.pos_x + x \
-                and primary_token.pos_y == other_token.pos_y:
-            return True
-
-
-def check_connect(list_token, number_in_a_row=4):
-    for x in list_token:
-        out = [x.return_position()]
-        other_token = list_token[:]
-        other_token.remove(x)
-        corresponding_token = [y for y in other_token if check_condition(x, y)]
-        if len(corresponding_token) == number_in_a_row - 1:
-            for x in corresponding_token: out.append(x.return_position())
-            return out
-    return None
 
 
 def existing_token(list_token, pos_x, pos_y):
@@ -68,12 +78,14 @@ def ask_coordinates(list_token):
 
 
 def main():
+    player_1 = Player('x')
     quadrillage(None)
     list_token = []
-    while not check_connect(list_token):
-        pos_x, pos_y = ask_coordinates(list_token)
-        list_token.append(Token(int(pos_x), int(pos_y)))
-        quadrillage(list_token)
-    print(check_connect(list_token))
+    while not player_1.check_connect():
+        pos_x, pos_y = ask_coordinates(player_1.list_token)
+        player_1.list_token.append(Token(int(pos_x), int(pos_y)))
+        quadrillage(player_1.list_token)
+    print(player_1.check_connect(list_token))
+
 
 if __name__ == '__main__': main()

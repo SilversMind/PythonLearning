@@ -78,7 +78,7 @@ def ask_coordinates(list_token):
 
 
 def main():
-    player_1 = Player('x')
+    player_1 = Player('y')
     quadrillage(None)
     list_token = []
     while not player_1.check_connect():

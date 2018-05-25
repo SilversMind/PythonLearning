@@ -4,10 +4,40 @@
 
 class Player():
     number_in_a_row = 4
+    total_token = []
 
-    def __init__(self, symbol):
+    def __init__(self, name, symbol):
         self.list_token = []
+        self.name = name
         self.symbol = symbol
+    @classmethod
+    def quadrillage(cls, lenght=8):
+        for index_y in range(lenght, 0, -1):
+            for index_x in range(1, lenght + 2):
+                present_token = cls.existing_token(index_x, index_y)
+                if present_token:
+                    print('|{}'.format(present_token[1].symbol), end="")
+                else:
+                    print('| ', end="")
+                if index_x == lenght + 1:
+                    print('')
+
+    @classmethod
+    def existing_token(cls, pos_x, pos_y):
+        if Player.total_token:
+            for token in Player.total_token:
+                if (pos_x, pos_y) == (token[0].pos_x, token[0].pos_y):
+                    return token
+        return False
+
+    def ask_coordinates(self):
+        pos_x, pos_y = ask_coordinate('column'), ask_coordinate('line')
+        while Player.existing_token(pos_x, pos_y) \
+                or not (pos_y == 1 or Player.existing_token(pos_x, pos_y - 1)):
+            print('This position is unavailable, please select a new one')
+            pos_x, pos_y = ask_coordinate('line'), ask_coordinate('column')
+        self.list_token.append(Token(pos_x, pos_y))
+        Player.total_token.append((Token(pos_x, pos_y),self))
 
     def check_condition(self, primary_token, other_token, win_direction):
         win_pack = ((1, 0), (0, 1), (1, 1), (-1, 1))
@@ -41,25 +71,6 @@ class Token():
         return self.pos_x, self.pos_y
 
 
-def quadrillage(list_token,lenght=8):
-    for index_y in range(lenght, 0, -1):
-        for index_x in range(1, lenght+2):
-            if existing_token(list_token, index_x, index_y):
-                print('|x', end="")
-            else:
-                print('| ', end="")
-            if index_x == lenght + 1:
-                print('')
-
-
-def existing_token(list_token, pos_x, pos_y):
-    if list_token:
-        for token in list_token:
-            if (pos_x, pos_y) == (token.pos_x, token.pos_y):
-                return True
-    return False
-
-
 def ask_coordinate(item):
     pos_lambda = input("Please enter the {} coordinate\n".format(item))
     while pos_lambda not in list(map(str, range(1, 9))):
@@ -67,25 +78,21 @@ def ask_coordinate(item):
     return int(pos_lambda)
 
 
-def ask_coordinates(list_token):
-    pos_x, pos_y = ask_coordinate('column'), ask_coordinate('line')
-    while existing_token(list_token, pos_x, pos_y)\
-            or not(pos_y == 1 or existing_token(list_token, pos_x, pos_y -1)):
-
-        print('This position is unavailable, please select a new one')
-        pos_x, pos_y = ask_coordinate('line'), ask_coordinate('column')
-    return pos_x, pos_y
-
-
 def main():
-    player_1 = Player('y')
-    quadrillage(None)
-    list_token = []
-    while not player_1.check_connect():
-        pos_x, pos_y = ask_coordinates(player_1.list_token)
-        player_1.list_token.append(Token(int(pos_x), int(pos_y)))
-        quadrillage(player_1.list_token)
-    print(player_1.check_connect(list_token))
+    player_1 = Player('Barnabé', 'o')
+    player_2 = Player('Mauricio', 'x')
+    player_3 = Player('Marvin Serviette', '&')
+    list_player = (player_1, player_2, player_3)
+    Player.quadrillage()
+    last_player = list_player[0]
+    while not last_player.check_connect():
+        i = 0
+        while not last_player.check_connect() and i < len(list_player):
+            last_player = list_player[i]
+            last_player.ask_coordinates()
+            Player.quadrillage()
+            i += 1
+    print('{} wins with the move {}'.format(last_player.name, last_player.check_connect()))
 
 
 if __name__ == '__main__': main()

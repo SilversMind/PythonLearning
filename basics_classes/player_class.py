@@ -13,6 +13,16 @@ class Player:
         self.list_token = []
         self.name = name
         self.symbol = symbol
+
+    @classmethod
+    def playable_position (cls, lenght=7, width=6):
+        playable_position_tab = set()
+        for pos_y in range(1, width +1):
+            for pos_x in range(1, lenght +1):
+                if not(cls.existing_token(pos_x, pos_y)) and (pos_y == 1 or cls.existing_token(pos_x, pos_y - 1)):
+                    playable_position_tab.add((pos_x, pos_y))
+        return playable_position_tab
+
     @classmethod
     def quadrillage(cls, lenght=7, width=6):
         for index_y in range(width, 0, -1):
@@ -27,8 +37,8 @@ class Player:
 
     @classmethod
     def existing_token(cls, pos_x, pos_y):
-        if Player.total_token:
-            for token in Player.total_token:
+        if cls.total_token:
+            for token in cls.total_token:
                 if (pos_x, pos_y) == (token[0].pos_x, token[0].pos_y):
                     return token
         return False

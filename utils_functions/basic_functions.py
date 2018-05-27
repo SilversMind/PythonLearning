@@ -1,5 +1,14 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
+import sys
+
+
+def check_args(arg):
+    for x in sys.argv:
+        if arg in x:
+            return True
+    return False
+
 
 def ask_coordinate(item):
     pos_lambda = input("Please enter the {} coordinate\n".format(item))

@@ -5,10 +5,10 @@ import sys
 from random import randint
 from player_class import Player
 from token_class import Token
-from pickle import dump
+from basic_functions import check_args
 
 class Tester:
-    possible_outcome = []
+    current_serie = ''
 
     def __init__(self):
         self.dico_sum_position = {key: 0 for key in list(map(str, range(1, 8)))}
@@ -87,54 +87,59 @@ class Tester:
             self.dico_sum_position[value] += 1
             self.player_list[indx % 2].list_token.append((Token(int(value), self.dico_sum_position[value])))
             self.total_token.append((Token(int(value), self.dico_sum_position[value]), self.player_list[indx % 2]))
-        self.quadrillage()
 
-    def check_future_position(self, serie, possible_position):
+        if '-g' in sys.argv:
+            self.quadrillage()
+
+    @classmethod
+    def check_future_position(cls, serie, possible_position):
+        tab = set()
         for x in possible_position:
             print('Playing on the {} position'.format(x))
             new_serie = serie + str(x[0])
             with Tester() as new_tester:
                 new_tester.construct_token_from_existing_serie(new_serie)
                 print(new_tester.check_playables_positions())
-                current_player = new_tester.player_list[(len(new_serie) + 1) % 2]
-                if current_player.check_connect():
+                current_player = new_tester.player_list[len(new_serie) % 2]
+                winning_move = current_player.check_connect()
+                if winning_move:
                     print('Win for {} by playing {}'.format(current_player.name, x))
-                    Tester.possible_outcome.append((new_serie, 'Win'))
-                    return new_serie
-                else:
-                    Tester.possible_outcome.append((new_serie, 'No'))
+                    return determining_score(cls.current_serie, new_serie), new_serie
+                elif len(new_serie) == 42 and not winning_move:
+                    return 0, new_serie
                 print('----------------------')
                 new_possible_position = new_tester.check_playables_positions()
                 serie_to_return = new_tester.check_future_position(new_serie, new_possible_position)
-                Tester.possible_outcome.append(serie_to_return)
+                tab.add(serie_to_return)
+                print(tab)
+        print(tab)
+        return max(tab)
 
 
 def determining_score(serie, outcome):
     current_player = len(serie) % 2
-    last_player = (len(outcome) - 1) % 2
+    last_player = len(outcome) % 2
     multiplier = 1
-    if len(outcome) == 42:
-        return 0
     if current_player != last_player:
         multiplier = -1
     score = (((42 - len(outcome)) // 2) +1)*multiplier
     return score
 
 
-
 def main():
     with Tester() as tester:
-        serie = '7422341735647741166133573473242566'
-        tester.construct_token_from_existing_serie(serie)
+        Tester.current_serie = '67152117737262713366376314254'
+        tester.construct_token_from_existing_serie(Tester.current_serie)
         print('----------------------')
         possible_position = tester.check_playables_positions()
         print(possible_position)
-        tester.check_future_position(serie, possible_position)
-        possible_outcome = [x for x in Tester.possible_outcome if x is not None]
+        final_score = tester.check_future_position(Tester.current_serie, possible_position)
+        print('FINAL SCORE: {}'.format(final_score))
+
+        '''possible_outcome = [x for x in Tester.possible_outcome if x is not None]
         dump(possible_outcome, open("../test_minmax/possible_outcome_test.p", "wb"))
         print(len(possible_outcome))
-        print([determining_score(serie, x[0]) for x in possible_outcome if x[1] == 'Win'])
-
+        print([determining_score(serie, x[0]) for x in possible_outcome if x[1] == 'Win'])'''
 
 
 if __name__ == '__main__': main()
